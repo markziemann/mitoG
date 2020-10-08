@@ -537,7 +537,7 @@ if (cnt_deg>2) {
 To determine whether mitoG attenuates diabetes we can overlap the DGEs found in these contrasts.
 Diabetes is measured in contrast 8 and mitoG in contrast 6.
 
-```{r,venn1}
+```{r,venn1,fig.height=7,fig.width=7}
 
 de6_up <- rownames(subset(de6,padj<0.05 & log2FoldChange>0))
 de6_dn <- rownames(subset(de6,padj<0.05 & log2FoldChange<0))
@@ -550,6 +550,42 @@ v1 <- list("mitoG up"= de6_up,
           "dibetes dn"= de8_dn)
 
 plot(euler(v1),quantities = TRUE)
+
+```
+
+## Custom heatmap
+
+```{r,hm,fig.height=7,fig.width=7}
+
+mygenes <- unique(c(rownames(de6)[1:50],rownames(de8)[1:50]))
+
+length(mygenes)
+
+ss1 <- subset(ss,trt=="etoh"|trt=="mitoG")
+ss1$grp <- sapply(strsplit(ss1[,1],'_'),"[[",1)
+mycols <- gsub("wt-etoh","blue",ss1$grp)
+mycols <- gsub("het-etoh","red",mycols)
+mycols <- gsub("het-mitoG","orange",mycols)
+mycols <- gsub("wt-mitoG","green",mycols)
+
+xxx <- xx/colSums(xx)*1e6
+xxx <- xxx[,which(colnames(xxx) %in% ss1[,1])]
+mx <- as.matrix(xxx[which(rownames(xxx) %in% mygenes),])
+
+colfunc <- colorRampPalette(c("blue", "white", "red"))
+
+heatmap.2(mx,trace="none",scale="row",margin=c(10,15),
+    ColSideColors =mycols , col=colfunc(25) ,cexRow = 0.5  )
+
+mx <- mx[,grep("wt-mitoG",colnames(mx),invert=TRUE)]
+ss1 <- ss1[grep("wt-mitoG",ss1[,1],invert=TRUE),]
+mycols <- gsub("wt-etoh","blue",ss1$grp)
+mycols <- gsub("het-etoh","red",mycols)
+mycols <- gsub("het-mitoG","orange",mycols)
+
+heatmap.2(mx,trace="none",scale="row",margin=c(10,15),
+    ColSideColors =mycols , col=colfunc(25) ,cexRow = 0.5  )
+
 
 ```
 
